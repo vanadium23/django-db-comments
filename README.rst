@@ -11,7 +11,10 @@ Django Db Comments
 .. image:: https://codecov.io/gh/vanadium23/django-db-comments/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/vanadium23/django-db-comments
 
-Move your model's verbose name and help_text to database comments
+Move your model's verbose name and help_text to database comments:
+
+.. image:: setup-and-result.jpg
+    :alt: Add to INSTALLED_APPS and see description in database.
 
 Documentation
 -------------
