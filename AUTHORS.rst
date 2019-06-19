@@ -10,4 +10,6 @@ Development Lead
 Contributors
 ------------
 
+* @ErhoSen https://github.com/ErhoSen
+
 None yet. Why not be the first?
