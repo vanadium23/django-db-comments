@@ -13,6 +13,7 @@ from psycopg2 import sql
 
 from django.test import TestCase
 from django.db import models, DEFAULT_DB_ALIAS
+from django.utils.translation import ugettext_lazy as _
 
 from django_db_comments.db_comments import get_comments_for_model, add_comments_to_database, POSTGRES_COMMENT_SQL
 
@@ -54,3 +55,23 @@ class TestDjangoDbComments(TestCase):
         mock_cursor.execute.assert_called_once()
         mock_cursor.execute.assert_called()
         mock_cursor.execute.assert_called_once_with(query, [comment])
+
+    def test_ugettext_lazy_workaround(self):
+        class Model(models.Model):
+            # Example from Django auth.User
+            is_superuser = models.BooleanField(
+                _('superuser status'),
+                help_text=_(
+                    'Designates that this user has all permissions without '
+                    'explicitly assigning them.'
+                ),
+            )
+
+            class Meta:
+                app_label = 'tests'
+
+        column_comments = get_comments_for_model(Model)
+        self.assertDictEqual(column_comments, {
+            "is_superuser": "superuser status | Designates that this user has all "
+                            "permissions without explicitly assigning them."
+        })
