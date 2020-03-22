@@ -10,7 +10,7 @@ from django.conf import settings
 # 'django.db.backends.mysql'
 # 'django.db.backends.sqlite3'
 # 'django.db.backends.oracle'
-ALLOWED_ENGINES = ['django.db.backends.postgresql', 'django.db.backends.postgresql_psycopg2']
+ALLOWED_ENGINES = ['django.db.backends.postgresql', 'django.contrib.gis.db.backends.postgis', 'django.db.backends.postgresql_psycopg2']
 
 # http://initd.org/psycopg/docs/sql.html
 # https://www.postgresql.org/docs/9.6/sql-comment.html
