@@ -3,6 +3,11 @@
 History
 -------
 
+0.2.2 (2019-05-19)
+++++++++++++++++++
+
+* Add psqlextra.backend to ALLOWED_ENGINES. (PR #4 by @shuribuzz)
+
 0.2.1 (2019-05-19)
 ++++++++++++++++++
 
