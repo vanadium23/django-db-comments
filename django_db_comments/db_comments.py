@@ -36,7 +36,7 @@ def get_comments_for_model(model):
     return column_comments
 
 
-def add_comments_to_database(tables_comments, table_coment_dict, using=DEFAULT_DB_ALIAS):
+def add_comments_to_database(tables_comments, table_comment_dict, using=DEFAULT_DB_ALIAS):
     with connections[using].cursor() as cursor:
         with transaction.atomic():
             for table, columns in tables_comments.items():
