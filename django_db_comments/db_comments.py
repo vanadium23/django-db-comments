@@ -17,6 +17,7 @@ ALLOWED_ENGINES = ['django.db.backends.postgresql', 'django.contrib.gis.db.backe
 # https://www.postgresql.org/docs/9.6/sql-comment.html
 POSTGRES_COMMENT_SQL = sql.SQL("COMMENT ON COLUMN {}.{} IS %s")
 
+POSTGRES_COMMENT_ON_TABLE_SQL = sql.SQL("COMMENT ON TABLE {} IS %s")
 
 def get_comments_for_model(model):
     column_comments = {}
@@ -35,10 +36,16 @@ def get_comments_for_model(model):
     return column_comments
 
 
-def add_comments_to_database(tables_comments, using=DEFAULT_DB_ALIAS):
+def add_comments_to_database(tables_comments, table_coment_dict, using=DEFAULT_DB_ALIAS):
     with connections[using].cursor() as cursor:
         with transaction.atomic():
             for table, columns in tables_comments.items():
+                query_for_tablecomment = POSTGRES_COMMENT_ON_TABLE_SQL.format(sql.Identifier(table))
+                table_verbose_name = ''
+                if table_comment_dict[table]:
+                    table_verbose_name = table_comment_dict[table]
+                cursor.execute(query_for_tablecomment,[table_verbose_name])
+
                 for column, comment in columns.items():
                     query = POSTGRES_COMMENT_SQL.format(sql.Identifier(table), sql.Identifier(column))
                     cursor.execute(query, [comment])
@@ -69,11 +76,12 @@ def copy_help_texts_to_database(
     app_models = app_config.get_models()
 
     tables_comments = {model._meta.db_table: get_comments_for_model(model) for model in app_models}
+    teblecomments = { model._meta.db_table: model._meta.verbose_name.title() for model in app_config.get_models() }
 
     if not tables_comments:
         return
 
-    add_comments_to_database(tables_comments, using)
+    add_comments_to_database(tables_comments, teblecomments, using)
 
     if verbosity >= 2:
         for table, columns in tables_comments.items():
