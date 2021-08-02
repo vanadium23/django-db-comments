@@ -45,24 +45,26 @@ def get_comments_for_model(model):
     return column_comments
 
 
-def add_comments_to_database(
-    tables_comments, table_comment_dict, using=DEFAULT_DB_ALIAS
-):
+def add_column_comments_to_database(columns_comments, using=DEFAULT_DB_ALIAS):
     with connections[using].cursor() as cursor:
         with transaction.atomic():
-            for table, columns in tables_comments.items():
-                query_for_table_comment = POSTGRES_COMMENT_ON_TABLE_SQL.format(
-                    sql.Identifier(table)
-                )
-                if table_comment_dict[table]:
-                    table_verbose_name = table_comment_dict[table]
-                    cursor.execute(query_for_table_comment, [table_verbose_name])
+            for table, columns in columns_comments.items():
 
                 for column, comment in columns.items():
                     query = POSTGRES_COMMENT_SQL.format(
                         sql.Identifier(table), sql.Identifier(column)
                     )
                     cursor.execute(query, [comment])
+
+
+def add_table_comments_to_database(table_comment_dict, using=DEFAULT_DB_ALIAS):
+    with connections[using].cursor() as cursor:
+        with transaction.atomic():
+            for table, comment in table_comment_dict.items():
+                query_for_table_comment = POSTGRES_COMMENT_ON_TABLE_SQL.format(
+                    sql.Identifier(table)
+                )
+                cursor.execute(query_for_table_comment, [comment])
 
 
 def copy_help_texts_to_database(
@@ -92,15 +94,18 @@ def copy_help_texts_to_database(
     columns_comments = {
         model._meta.db_table: get_comments_for_model(model) for model in app_models
     }
+
+    if columns_comments:
+        add_column_comments_to_database(columns_comments, using)
+
     table_comments = {
         model._meta.db_table: model._meta.verbose_name.title()
         for model in app_config.get_models()
+        if model._meta.verbose_name
     }
 
-    if not columns_comments and not table_comments:
-        return
-
-    add_comments_to_database(columns_comments, table_comments, using)
+    if table_comments:
+        add_table_comments_to_database(table_comments, using)
 
     if verbosity >= 2:
         for table, columns in columns_comments.items():
