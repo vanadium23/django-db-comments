@@ -3,6 +3,11 @@
 History
 -------
 
+0.3.0 (2021-08-02)
+++++++++++++++++++
+
+* Add comments to tables based on verbose_name of model. (PR #5 by @ssatoh17)
+
 0.2.2 (2019-05-19)
 ++++++++++++++++++
 
