@@ -51,13 +51,12 @@ def add_comments_to_database(
     with connections[using].cursor() as cursor:
         with transaction.atomic():
             for table, columns in tables_comments.items():
-                query_for_tablecomment = POSTGRES_COMMENT_ON_TABLE_SQL.format(
+                query_for_table_comment = POSTGRES_COMMENT_ON_TABLE_SQL.format(
                     sql.Identifier(table)
                 )
-                table_verbose_name = ""
                 if table_comment_dict[table]:
                     table_verbose_name = table_comment_dict[table]
-                cursor.execute(query_for_tablecomment, [table_verbose_name])
+                    cursor.execute(query_for_table_comment, [table_verbose_name])
 
                 for column, comment in columns.items():
                     query = POSTGRES_COMMENT_SQL.format(
@@ -90,20 +89,23 @@ def copy_help_texts_to_database(
     app_config = apps.get_app_config(app_label)
     app_models = app_config.get_models()
 
-    tables_comments = {
+    columns_comments = {
         model._meta.db_table: get_comments_for_model(model) for model in app_models
     }
-    teblecomments = {
+    table_comments = {
         model._meta.db_table: model._meta.verbose_name.title()
         for model in app_config.get_models()
     }
 
-    if not tables_comments:
+    if not columns_comments and not table_comments:
         return
 
-    add_comments_to_database(tables_comments, teblecomments, using)
+    add_comments_to_database(columns_comments, table_comments, using)
 
     if verbosity >= 2:
-        for table, columns in tables_comments.items():
+        for table, columns in columns_comments.items():
             for column, comment in columns.items():
                 print("Adding comment in %s for %s = '%s'" % (table, column, comment))
+
+        for table, comment in table_comments.items():
+            print("Adding comment to %s = '%s'" % (table, comment))
