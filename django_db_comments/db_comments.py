@@ -101,7 +101,7 @@ def copy_help_texts_to_database(
     table_comments = {
         model._meta.db_table: model._meta.verbose_name.title()
         for model in app_config.get_models()
-        if model._meta.verbose_name
+        if model._meta.verbose_name and model._meta.managed and not model._meta.proxy and not model._meta.abstract
     }
 
     if table_comments:
