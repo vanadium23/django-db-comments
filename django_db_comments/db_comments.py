@@ -92,7 +92,7 @@ def copy_help_texts_to_database(
     app_models = app_config.get_models()
 
     columns_comments = {
-        model._meta.db_table: get_comments_for_model(model) for model in app_models
+        model._meta.db_table: get_comments_for_model(model) for model in app_models if model._meta.managed and not model._meta.proxy and not model._meta.abstract
     }
 
     if columns_comments:
