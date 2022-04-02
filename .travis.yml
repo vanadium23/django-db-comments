@@ -40,6 +40,14 @@ matrix:
       env: DJANGO=32
     - python: "3.5"
       env: DJANGO=40
+    - python: "3.6"
+      env: DJANGO=40
+    - python: "3.7"
+      env: DJANGO=40
+    - python: "3.10"
+      env: DJANGO=111
+    - python: "3.10"
+      env: DJANGO=20
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -r requirements_test.txt
