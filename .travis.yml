@@ -1,6 +1,8 @@
 # Config file for automatic testing at travis-ci.org
 
 language: python
+# update for python 3.10
+dist: bionic
 
 python:
   - "3.10"
