@@ -89,7 +89,11 @@ def copy_help_texts_to_database(
         return
 
     app_config = apps.get_app_config(app_label)
-    app_models = app_config.get_models()
+    app_models = [
+        app_model
+        for app_model in app_config.get_models()
+        if not any([app_model.abstract, app_model.proxy, not app_model.managed])
+    ]
 
     columns_comments = {
         model._meta.db_table: get_comments_for_model(model) for model in app_models
@@ -100,7 +104,7 @@ def copy_help_texts_to_database(
 
     table_comments = {
         model._meta.db_table: model._meta.verbose_name.title()
-        for model in app_config.get_models()
+        for model in app_models
         if model._meta.verbose_name
     }
 

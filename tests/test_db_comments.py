@@ -11,8 +11,8 @@ Tests for `django-db-comments` module.
 from mock import patch
 from psycopg2 import sql
 
-from django.test import TestCase
 from django.db import models, DEFAULT_DB_ALIAS
+from django.test import TestCase
 try:
     from django.utils.translation import ugettext_lazy as _
 except ImportError:
