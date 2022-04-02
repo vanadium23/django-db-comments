@@ -3,6 +3,11 @@
 History
 -------
 
+0.4.0 (2022-04-02)
+++++++++++++++++++
+
+* Skip proxy, abstract and not managed model. (Issue #11 by @xjlin0)
+
 0.3.1 (2021-08-02)
 ++++++++++++++++++
 
