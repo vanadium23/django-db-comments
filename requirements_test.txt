@@ -6,4 +6,4 @@ codecov>=2.0.0
 
 
 # Additional test requirements go here
-psycopg2>=2.7.0
+psycopg2-binary>=2.7.0

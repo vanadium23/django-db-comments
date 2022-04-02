@@ -13,7 +13,11 @@ from psycopg2 import sql
 
 from django.test import TestCase
 from django.db import models, DEFAULT_DB_ALIAS
-from django.utils.translation import ugettext_lazy as _
+try:
+    from django.utils.translation import ugettext_lazy as _
+except ImportError:
+    # django 4.0 removed ugettext_lazy
+    from django.utils.translation import gettext_lazy as _
 
 from django_db_comments.db_comments import (
     get_comments_for_model,
