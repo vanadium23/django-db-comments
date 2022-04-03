@@ -67,6 +67,19 @@ def add_table_comments_to_database(table_comment_dict, using=DEFAULT_DB_ALIAS):
                 cursor.execute(query_for_table_comment, [comment])
 
 
+def _check_app_config(app_config, using):
+    app_label = app_config.label
+    if not app_config.models_module:
+        return False
+
+    if settings.DATABASES[using]["ENGINE"] not in ALLOWED_ENGINES:
+        return False
+
+    if not router.allow_migrate(using, app_label):
+        return False
+    return True
+
+
 def copy_help_texts_to_database(
     app_config,
     verbosity=2,
@@ -78,21 +91,19 @@ def copy_help_texts_to_database(
     """
     Create content types for models in the given app.
     """
-    if not app_config.models_module:
+    if not _check_app_config(app_config, using):
         return
 
-    if settings.DATABASES[using]["ENGINE"] not in ALLOWED_ENGINES:
-        return
-
-    app_label = app_config.label
-    if not router.allow_migrate(using, app_label):
-        return
-
-    app_config = apps.get_app_config(app_label)
     app_models = [
         app_model
         for app_model in app_config.get_models()
-        if not any([app_model.abstract, app_model.proxy, not app_model.managed])
+        if not any(
+            [
+                app_model._meta.abstract,
+                app_model._meta.proxy,
+                not app_model._meta.managed,
+            ]
+        )
     ]
 
     columns_comments = {

@@ -11,8 +11,10 @@ Tests for `django-db-comments` module.
 from mock import patch
 from psycopg2 import sql
 
+from django.apps import apps
 from django.db import models, DEFAULT_DB_ALIAS
 from django.test import TestCase
+
 try:
     from django.utils.translation import ugettext_lazy as _
 except ImportError:
@@ -25,6 +27,7 @@ from django_db_comments.db_comments import (
     add_table_comments_to_database,
     POSTGRES_COMMENT_SQL,
     POSTGRES_COMMENT_ON_TABLE_SQL,
+    copy_help_texts_to_database,
 )
 
 
@@ -38,7 +41,7 @@ class TestDjangoDbComments(TestCase):
             )
 
             class Meta:
-                app_label = "tests"
+                app_label = "unit_test"
 
         column_comments = get_comments_for_model(Model)
         self.assertDictEqual(
@@ -91,7 +94,7 @@ class TestDjangoDbComments(TestCase):
         mock_cursor.execute.assert_called_once_with(query, [comment])
 
     def test_ugettext_lazy_workaround(self):
-        class Model(models.Model):
+        class GettextLazyModel(models.Model):
             # Example from Django auth.User
             is_superuser = models.BooleanField(
                 _("superuser status"),
@@ -102,9 +105,9 @@ class TestDjangoDbComments(TestCase):
             )
 
             class Meta:
-                app_label = "tests"
+                app_label = "unit_test"
 
-        column_comments = get_comments_for_model(Model)
+        column_comments = get_comments_for_model(GettextLazyModel)
         self.assertDictEqual(
             column_comments,
             {
@@ -112,3 +115,26 @@ class TestDjangoDbComments(TestCase):
                 "permissions without explicitly assigning them."
             },
         )
+
+    def test_post_migrate_signal(self):
+        app_config = apps.get_app_config("tests")
+        with patch(
+            "django_db_comments.db_comments._check_app_config", return_value=True
+        ):
+            with patch(
+                "django_db_comments.db_comments.add_column_comments_to_database",
+                return_value=True,
+            ) as mock_column_comments:
+                with patch(
+                    "django_db_comments.db_comments.add_table_comments_to_database",
+                    return_value=True,
+                ) as mock_table_comments:
+                    copy_help_texts_to_database(app_config)
+                    mock_table_comments.assert_called_once_with(
+                        {"tests_examplemodel": "This Is An Example For Table Comment"},
+                        "default",
+                    )
+                    mock_column_comments.assert_called_once_with(
+                        {"tests_examplemodel": {"created_at": "model creation time"}},
+                        "default",
+                    )
