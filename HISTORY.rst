@@ -3,6 +3,11 @@
 History
 -------
 
+0.4.1 (2022-04-03)
+++++++++++++++++++
+
+* Bugfix for models detection and more unit tests. (PR #13)
+
 0.4.0 (2022-04-02)
 ++++++++++++++++++
 
