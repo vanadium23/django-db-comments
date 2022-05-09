@@ -18,6 +18,9 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
         django-version: ["3.2", "4.0"]
+    env:
+      PYTHON: ${{ matrix.python-version }}
+      DJANGO: ${{ matrix.django-version }}
     steps:
       - uses: actions/checkout@v2
       - name: set up python ${{ matrix.python-version }}
@@ -29,5 +32,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install tox
+          pip install -r requirements_test.txt
       - name: run tox
         run: tox -e py-${{ matrix.python-version }}-django-${{ matrix.django-version }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          env_vars: PYTHON,DJANGO
+          fail_ci_if_error: true
+          verbose: true
