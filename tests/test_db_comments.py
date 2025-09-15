@@ -73,6 +73,34 @@ class TestDjangoDbComments(TestCase):
         mock_cursor.execute.assert_called()
         mock_cursor.execute.assert_called_once_with(query, [comment])
 
+    def test_get_comments_for_model_with_inherited_fields(self):
+        class BaseModel(models.Model):
+            first_name = models.CharField(max_length=50)
+            last_name = models.CharField(max_length=50)
+            date_of_birth = models.DateField()
+
+            class Meta:
+                app_label = "unit_test"
+
+        class InheritingModel(BaseModel):
+            no_comment = models.TextField()
+            verbose_name = models.TextField("This is a verbose name")
+            help_text = models.TextField(
+                help_text="I really should see this in the database"
+            )
+
+            class Meta:
+                app_label = "unit_test"
+
+        column_comments = get_comments_for_model(InheritingModel)
+        self.assertDictEqual(
+            column_comments,
+            {
+                "verbose_name": "This is a verbose name",
+                "help_text": "I really should see this in the database",
+            },
+        )
+
     @patch("django_db_comments.db_comments.connections")
     def test_add_table_comments_to_database(self, mock_connections):
         mock_cursor = mock_connections.__getitem__(
