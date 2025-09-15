@@ -13,7 +13,7 @@ from psycopg2 import sql
 
 from django.apps import apps
 from django.db import models, DEFAULT_DB_ALIAS
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 
 try:
     from django.utils.translation import ugettext_lazy as _
@@ -116,6 +116,8 @@ class TestDjangoDbComments(TestCase):
             },
         )
 
+class TestDbcommentsSignal(TransactionTestCase):
+    available_apps = ["django_db_comments", "tests"]
     def test_post_migrate_signal(self):
         app_config = apps.get_app_config("tests")
         with patch(
@@ -129,12 +131,20 @@ class TestDjangoDbComments(TestCase):
                     "django_db_comments.db_comments.add_table_comments_to_database",
                     return_value=True,
                 ) as mock_table_comments:
-                    copy_help_texts_to_database(app_config)
-                    mock_table_comments.assert_called_once_with(
-                        {"tests_examplemodel": "This Is An Example For Table Comment"},
-                        "default",
-                    )
-                    mock_column_comments.assert_called_once_with(
-                        {"tests_examplemodel": {"created_at": "model creation time"}},
-                        "default",
-                    )
+                    with patch("django_db_comments.db_comments.PROCESSED_APPS", set()):
+                        copy_help_texts_to_database(app_config)
+                        mock_table_comments.assert_called_once_with(
+                            {"tests_examplemodel": "This Is An Example For Table Comment"},
+                            "default",
+                        )
+                        mock_column_comments.assert_called_once_with(
+                            {"tests_examplemodel": {"created_at": "model creation time"}},
+                            "default",
+                        )
+                        # make sure they're not called multiple times
+                        mock_table_comments.reset_mock()
+                        mock_column_comments.reset_mock()
+
+                        copy_help_texts_to_database(app_config)
+                        mock_table_comments.assert_not_called()
+                        mock_column_comments.assert_not_called()

@@ -23,6 +23,11 @@ POSTGRES_COMMENT_SQL = sql.SQL("COMMENT ON COLUMN {}.{} IS %s")
 
 POSTGRES_COMMENT_ON_TABLE_SQL = sql.SQL("COMMENT ON TABLE {} IS %s")
 
+# For TransactionTestCase tests, the post_migrate signal is fired as part of a flush
+# operation after each test. We keep track of the apps we've synced the comments for
+# in order to avoid syncing db comments after each test.
+PROCESSED_APPS = set()
+
 
 def get_comments_for_model(model):
     column_comments = {}
@@ -91,6 +96,9 @@ def copy_help_texts_to_database(
     """
     Create content types for models in the given app.
     """
+    if app_config in PROCESSED_APPS:
+        return
+    PROCESSED_APPS.add(app_config)
     if not _check_app_config(app_config, using):
         return
 
