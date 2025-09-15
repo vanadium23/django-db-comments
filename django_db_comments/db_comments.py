@@ -1,7 +1,7 @@
 from psycopg2 import sql
 
 from django.apps import apps as global_apps
-from django.db import DEFAULT_DB_ALIAS, router, connections, transaction
+from django.db import DEFAULT_DB_ALIAS, router, connections, transaction, connection
 from django.conf import settings
 
 # django engines support
@@ -96,7 +96,7 @@ def copy_help_texts_to_database(
 
     app_models = [
         app_model
-        for app_model in app_config.get_models()
+        for app_model in apps.get_models()
         if not any(
             [
                 app_model._meta.abstract,
