@@ -1,4 +1,4 @@
 bumpversion==0.5.3
 twine==4.0.0
-wheel==0.30.0
+wheel==0.46.2
 pre-commit
